@@ -1,0 +1,158 @@
+
+### Setup
+
+# Disable Fast Boot
+# Disable Secure Boot
+# Enable USB Boot
+# Set USB Disk as boot priority
+# Dont use virtbox.
+
+
+
+### Bootstrap
+
+# localectl list-keymaps
+loadkeys cz-us-qwertz
+
+# lsblk -o PTTYPE,PATH,SIZE,PARTTYPENAME,FSTYPE,FSVER,MOUNTPOINT,PARTFLAGS
+if [ -e /sys/firmware/efi ]; then
+	fdisk /dev/sda
+	$ g
+	$ n
+		$ \r \r +512M
+		$ t 1
+	$ n
+		$ \r \r \r
+	$ w
+	
+	mkfs.fat -F32 /dev/sda1
+	mkfs.ext4 /dev/sda2
+	
+	mount /dev/sda2 /mnt # here be dragons
+	mkdir /mnt/boot
+	mount /dev/sda1 /mnt/boot # dragons end
+else
+	fdisk /dev/sda
+		$ o
+		$ n
+			$ \r \r \r \r
+		$ w
+	
+	mkfs.ext4 /dev/sda1
+	
+	mount /dev/sda1 /mnt
+fi
+
+# dhcpcd
+# wifi-menu
+ping 1.1.1.1
+
+nano /etc/pacman.d/mirrorlist
+pacstrap /mnt base nano neofetch htop
+
+fallocate -l 6G /mnt/swapfile
+chmod 600 /mnt/swapfile
+mkswap /mnt/swapfile
+swapon /mnt/swapfile
+
+genfstab -U /mnt >> /mnt/etc/fstab
+
+arch-chroot /mnt
+
+
+
+### Installation
+
+# timedatectl set-ntp 1
+hwclock -w
+ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
+
+nano /etc/locale.gen
+	$ en_GB.UTF-8 UTF-8
+locale-gen
+nano /etc/vconsole.conf
+	$ echo KEYMAP=cz-us-qwertz
+
+echo dellin > /etc/hostname
+
+nano /etc/pacman.conf
+	$ Color
+	$ TotalDownload
+	$ VerbosePkgLists
+	$ ILoveCandy
+	$ [multilib]\nInclude = /etc/pacman.d/mirrorlist # enable 32-bit
+
+pacman -Syyy linux # linux-lts
+pacman -S linux-firmware # dosfstools mtools
+neofetch
+pacman -S # intel-ucode # amd-ucode
+pacman -S # mesa # nvidia nvidia-utils nvidia-lts
+
+pacman -S netctl ifplugd dhcpcd wpa_supplicant dialog
+systemctl enable netctl-ifplugd@interface.service
+systemctl enable netctl-auto@interface.service
+# wifi-menu
+
+pacman -S man-db man-pages base-devel git
+
+pacman -S grub os-prober efibootmgr
+if [ -e /sys/firmware/efi ]; then
+	grub-install --efi-directory=/boot # this should work, there's absolutely no reason for it not to work
+else
+	grub-install /dev/sda
+fi
+mkinitcpio -P
+grub-mkconfig -o /boot/grub/grub.cfg
+
+passwd
+	$ 123456
+	$ 123456
+
+EDITOR=nano visudo
+	$ Defaults !tty_tickets
+	$ %wheel ALL=(ALL) ALL
+	$ %wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu
+
+useradd lin -m -s /bin/bash
+usermod lin -a -G adm,ftp,games,http,log,rfkill,sys,uucp,wheel,tty
+usermod lin -a -G audio,disk,floppy,input,kvm,optical,scanner,storage,video
+usermod lin -a -G network,users
+passwd lin
+	$ 1234
+	$ 1234
+
+exit
+shutdown now # eject disc
+	$ lin
+	$ 1234
+
+
+
+### Graphics
+
+git clone https://aur.archlinux.org/ly.git
+cd ly
+makepkg -iscr
+sudo systemctl enable ly.service
+sudo systemctl disable getty@tty2.service
+
+pacman -S noto-fonts sway alacritty dmenu grm i3status mako slurp swayidle swaylock wallutils waybar xorg-server-xwayland
+
+sudo reboot
+	$ sway
+	$ lin
+	$ 1234
+
+### Usage
+
+pacman -S # install
+pacman -Syu # update, upgrade
+pacman -Ss # search server
+pacman -Q # search local
+pacman -Qe # search explicitly installed
+pacman -Qq # package names only
+pacman -Qm # AUR packages only
+pacman -Qdt # list unnecessary dependencies
+pacman -Rn # remove config
+pacman -Rs # remove unnecessary dependencies
+systemctl --type=service
