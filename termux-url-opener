@@ -1,0 +1,13 @@
+#!/usr/bin/fish
+
+while true
+        read -P 'Download video? [Yn]: ' video
+        switch $video
+                case '' Y y
+                        youtube-dl -i $argv[1] -f 'best' -o '~/storage/downloads/video/%(title)s.%(ext)s'
+                        and exit
+                case N n
+                        youtube-dl -i $argv[1] -f 'bestaudio' -o '~/storage/downloads/audio/%(title)s.%(ext)s' || youtube-dl -i $argv[1] -f 'best' -x -o '~/storage/downloads/audio/%(title)s.%(ext)s'
+                        and exit
+        end
+end
