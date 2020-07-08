@@ -2,12 +2,19 @@
 
 while true
         read -P 'Download video? [Yn]: ' video
+        set -l path
+        if test (youtube-dl --playlist-end '1' --get-filename -o '%(playlist_index)s' $argv) != 'NA'
+                set path '%(playlist)s/%(playlist_index)3s %(title)s.%(ext)s'
+        else
+                set -l date (date +%Y-%m-%d -d (youtube-dl --playlist-end '1' --get-filename -o '%(upload_date)s' $argv))
+                set path "%(title)s $date.%(ext)s"
+        end
         switch $video
                 case '' Y y
-                        youtube-dl -i -f 'best[height<=360]/worst' --write-sub --write-auto-sub --sub-lang 'en,cs,rechat' -o '~/storage/downloads/video/%(title)s.%(ext)s' $argv
+                        youtube-dl -i -f 'best[height<=360]/worst' --write-sub --write-auto-sub --sub-lang 'en,rechat' -o "~/storage/downloads/video/$path" $argv
                         and exit
                 case N n
-                        youtube-dl -i -f 'bestaudio/best[height<=360]/worst' -x -o '~/storage/downloads/audio/%(title)s.%(ext)s' $argv
+                        youtube-dl -i -f 'bestaudio/best[height<=360]/worst' -x -o "~/storage/downloads/audio/$path" $argv
                         and exit
         end
         printf '\nFailed...\n'
