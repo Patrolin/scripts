@@ -4,10 +4,11 @@ while true
         read -P 'Download video? [Yn]: ' video
         switch $video
                 case '' Y y
-                        youtube-dl -i $argv[1] -f 'best[height<=360]' --write-sub --write-auto-sub --sub-lang 'en' -o '~/storage/downloads/video/%(title)s.%(ext)s'
+                        youtube-dl -i -f 'best[height<=360]/worst' --write-sub --write-auto-sub --sub-lang 'en,cs,rechat' -o '~/storage/downloads/video/%(title)s.%(ext)s' $argv
                         and exit
                 case N n
-                        youtube-dl -i $argv[1] -f 'bestaudio' -o '~/storage/downloads/audio/%(title)s.%(ext)s' || youtube-dl -i $argv[1] -f 'best[height<=360]' -x -o '~/storage/downloads/audio/%(title)s.%(ext)s'
+                        youtube-dl -i -f 'bestaudio/best[height<=360]/worst' -x -o '~/storage/downloads/audio/%(title)s.%(ext)s' $argv
                         and exit
         end
+        printf '\nFailed...\n'
 end
