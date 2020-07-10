@@ -1,21 +1,40 @@
 #!/usr/bin/fish
 
+set true 1
+set false 0
+
 while true
         read -P 'Download video? [Yn]: ' video
+        switch $video
+                case '' y Y
+                        set video $true
+                case n N
+                        set video $false
+                case '*'
+                        continue
+        end
+        read -P 'Max height? [480]: ' height
+        switch $height
+                case ''
+                        set height 480
+                case best BEST
+                        set height 9999
+                case '*'
+                        continue
+        end
         set -l path
-        if test (youtube-dl --playlist-end '1' --get-filename -o '%(playlist_index)s' $argv) != 'NA'
+        if test (youtube-dl --playlist-items '1' --get-filename -o '%(playlist_index)s' $argv) != 'NA'
                 set path '%(playlist)s/%(playlist_index)3s %(title)s.%(ext)s'
         else
                 set -l date (date +%Y-%m-%d -d (youtube-dl --playlist-end '1' --get-filename -o '%(upload_date)s' $argv))
                 set path "%(title)s $date.%(ext)s"
         end
-        switch $video
-                case '' Y y
-                        youtube-dl -i -f 'best[height<=360]/worst' --write-sub --write-auto-sub --sub-lang 'en,rechat' -o "~/storage/downloads/video/$path" $argv
-                        and exit
-                case N n
-                        youtube-dl -i -f 'bestaudio/best[height<=360]/worst' -x -o "~/storage/downloads/audio/$path" $argv
-                        and exit
+        if test $video = $true
+                youtube-dl -i -f "best[height<=$height]/worst" --write-sub --write-auto-sub --sub-lang 'en,rechat' -o "~/storage/downloads/video/$path" $argv
+                and exit
+        else
+                youtube-dl -i -f "bestaudio/best[height<=$height]/worst" -x -o "~/storage/downloads/audio/$path" $argv
+                and exit
         end
-        printf '\nFailed...\n'
+        printf 'Failed...\n\n'
 end
