@@ -4,37 +4,47 @@ set true 1
 set false 0
 
 while true
-        read -P 'Download video? [Yn]: ' video
-        switch $video
-                case '' y Y
-                        set video $true
-                case n N
-                        set video $false
-                case '*'
-                        continue
-        end
-        read -P 'Max height? [480]: ' height
-        switch $height
-                case ''
-                        set height 480
-                case best BEST
-                        set height 9999
-                case '*'
-                        continue
-        end
-        set -l path
-        if test (youtube-dl --playlist-items '1' --get-filename -o '%(playlist_index)s' $argv) != 'NA'
-                set path '%(playlist)s/%(playlist_index)3s %(title)s.%(ext)s'
-        else
-                set -l date (date +%Y-%m-%d -d (youtube-dl --playlist-end '1' --get-filename -o '%(upload_date)s' $argv))
-                set path "%(title)s $date.%(ext)s"
-        end
-        if test $video = $true
-                youtube-dl -i -f "best[height<=$height]/worst" --write-sub --write-auto-sub --sub-lang 'en,cs' --embed-subs -o "~/storage/downloads/video/$path" $argv
-                and exit
-        else
-                youtube-dl -i -f "bestaudio/best[height<=$height]/worst" -x -o "~/storage/downloads/audio/$path" $argv
-                and exit
-        end
-        printf 'Failed...\n\n'
+	read -P 'Download video? [Yn]: ' video
+	switch $video
+		case '' y Y
+			set video $true
+		case n N
+			set video $false
+		case '*'
+			continue
+	end
+	read -P 'Max height? [480]: ' height
+	switch $height
+		case ''
+			set height 480
+		case best BEST
+			set height 9999
+		case '*'
+			continue
+	end
+	printf 'Checking playlist...\n'
+	set -l path
+	switch (youtube-dl --playlist-items '1' --get-filename -o '%(playlist_index)s' $argv)
+		case '' NA
+			set -l date (date +%Y-%m-%d -d (youtube-dl --playlist-end '1' --get-filename -o '%(upload_date)s' $argv))
+			set path "%(title)s $date.%(ext)s"
+		case '*'
+			set path '%(playlist)s/%(playlist_index)s %(title)s.%(ext)s'
+	end
+	set -l options -i --no-mtime --sleep-interval '1'
+	if test $video = $true
+		set -a options -f "bestvideo[height<=$height]+bestaudio/best[height<=$height]/best"
+		set -a options --merge-output-format 'mp4' --recode-video 'mp4'
+		set -a options --write-sub --write-auto-sub --sub-lang 'en,cs' --embed-subs
+		set -a options --write-thumbnail --embed-thumbnail
+		set -a options -o "~/storage/downloads/video/$path"
+	else
+		set -a options -f "bestaudio/best[height<=$height]/best"
+		set -a options -x --audio-format 'mp3' --recode-video 'mp3'
+		set -a options --add-metadata --metadata-from-title '%(artist)s - %(title)s'
+		set -a options -o "~/storage/downloads/audio/$path"
+	end
+	youtube-dl $options $argv
+	and exit
+	printf 'Failed...\n\n'
 end
