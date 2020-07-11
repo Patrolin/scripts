@@ -34,13 +34,13 @@ while true
 	set -l options -i --no-mtime --sleep-interval '1'
 	if test $video = $true
 		set -a options -f "bestvideo[height<=$height]+bestaudio/best[height<=$height]/best"
-		set -a options --merge-output-format 'mp4' --recode-video 'mp4'
-		set -a options --write-sub --write-auto-sub --sub-lang 'en,cs' --embed-subs
-		set -a options --write-thumbnail --embed-thumbnail
+		set -a options --merge-output-format 'mkv' --recode-video 'mkv' # debian is stupid and has decades old ffmpeg and doesn't let you recode into mp4
+		set -a options --write-sub --write-auto-sub --sub-lang 'en,cs,rechat' --embed-subs
+		#set -a options --write-thumbnail --embed-thumbnail # debian's youtube-dl is terrible and has broken dependencies for mp4 and doesn't support mkv
 		set -a options -o "~/storage/downloads/video/$path"
 	else
-		set -a options -f "bestaudio/best[height<=$height]/best"
-		set -a options -x --audio-format 'mp3' --recode-video 'mp3'
+		set -a options -f "best[height<=$height]/best"
+		set -a options -x --audio-format 'mp3' # youtube-dl is dumb and doesn't let you recode audio
 		set -a options --add-metadata --metadata-from-title '%(artist)s - %(title)s'
 		set -a options -o "~/storage/downloads/audio/$path"
 	end
