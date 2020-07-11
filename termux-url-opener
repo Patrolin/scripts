@@ -22,14 +22,18 @@ while true
 		case '*'
 			continue
 	end
-	printf 'Checking playlist...\n'
 	set -l path
-	switch (youtube-dl --playlist-items '1' --get-filename -o '%(playlist_index)s' $argv)
+	set -l playlist (youtube-dl --playlist-items '1' --get-filename -o '%(playlist)s' $argv)
+	switch $playlist
 		case '' NA
 			set -l date (date +%Y-%m-%d -d (youtube-dl --playlist-end '1' --get-filename -o '%(upload_date)s' $argv))
 			set path "%(title)s $date.%(ext)s"
 		case '*'
-			set path '%(playlist)s/%(playlist_index)s %(title)s.%(ext)s'
+			read -P "Playlist name? [$playlist]: " user_playlist
+			if test -z $user_playlist
+				set user_playlist $playlist
+			end
+			set path "$user_playlist/%(playlist_index)s %(title)s.%(ext)s"
 	end
 	set -l options -i --no-mtime --sleep-interval '1'
 	if test $video = $true
