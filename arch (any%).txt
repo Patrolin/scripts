@@ -1,0 +1,61 @@
+
+### Setup
+
+# Don't have too much video memory, lol
+# Use BIOS
+
+
+
+### Bootstrap
+
+fdisk /dev/sda
+	$ o
+	$ n
+		$ \r \r \r \r
+	$ w
+mkfs.ext4 /dev/sda1
+mount /dev/sda1 /mnt
+
+pacstrap /mnt base nano sudo linux linux-firmware networkmanager
+genfstab -U /mnt >> /mnt/etc/fstab
+arch-chroot /mnt
+
+
+
+### Install
+
+hwclock -w
+
+ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
+nano /etc/locale.gen
+	$ en_GB.UTF-8 UTF-8
+locale-gen
+
+echo dellin > /etc/hostname
+systemctl enable NetworkManager.service
+# nmcli # nmtui
+
+pacman -S grub
+grub-install /dev/sda
+grub-mkconfig -o /boot/grub/grub.cfg
+
+passwd
+	$ 12
+	$ 12
+
+
+
+### Users
+
+EDITOR=nano visudo
+	$ %wheel ALL=(ALL) ALL
+useradd lin -m -G wheel
+
+passwd lin
+	$ 12
+	$ 12
+
+exit
+reboot # TIME
+	$ lin
+	$ 12
