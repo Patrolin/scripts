@@ -60,7 +60,14 @@ class ipv4:
 		return self | (0xFFFFFFFF >> prefix)
 	
 	def host(self, prefix: int):
-		return ('.' if prefix >= 8 else '') + '.'.join(str(self).split('.')[floor(prefix / 8):])
+		if prefix < 8:
+			return f'{self.value >> 24}.{(self.value >> 16) & 0xFF}.{(self.value >> 8) & 0xFF}.{(self.value) & 0xFF}'
+		if prefix < 16:
+			return f'.{(self.value >> 16) & 0xFF}.{(self.value >> 8) & 0xFF}.{(self.value) & 0xFF}'
+		if prefix < 24:
+			return f'.{(self.value >> 8) & 0xFF}.{(self.value) & 0xFF}'
+		else:
+			return f'.{(self.value) & 0xFF}'
 	
 	
 	@staticmethod
