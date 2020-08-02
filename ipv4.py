@@ -62,9 +62,9 @@ class ipv4:
 	def host(self, prefix: int):
 		if prefix < 8:
 			return f'{self.value >> 24}.{(self.value >> 16) & 0xFF}.{(self.value >> 8) & 0xFF}.{(self.value) & 0xFF}'
-		if prefix < 16:
+		elif prefix < 16:
 			return f'.{(self.value >> 16) & 0xFF}.{(self.value >> 8) & 0xFF}.{(self.value) & 0xFF}'
-		if prefix < 24:
+		elif prefix < 24:
 			return f'.{(self.value >> 8) & 0xFF}.{(self.value) & 0xFF}'
 		else:
 			return f'.{(self.value) & 0xFF}'
