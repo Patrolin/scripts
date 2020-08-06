@@ -5,7 +5,10 @@
 # Disable Secure Boot
 # Enable USB Boot
 # Set USB Disk as boot priority
-# Dont use virtbox.
+# Don't have too much video memory, lol
+
+mkfs.vfat /dev/sdc
+dd status=progress bs=1M if=archlinux-2020.06.01-x86_64.iso of=/dev/sdc && sync
 
 
 
@@ -14,23 +17,23 @@
 # localectl list-keymaps
 loadkeys cz-us-qwertz
 
-# lsblk -o PTTYPE,PATH,SIZE,PARTTYPENAME,FSTYPE,FSVER,MOUNTPOINT,PARTFLAGS
+# lsblk -o PTTYPE,PATH,SIZE,PARTTYPENAME,FSTYPE,FSVER,MOUNTPOINT
 if [ -e /sys/firmware/efi ]; then
 	fdisk /dev/sda
 	$ g
 	$ n
-		$ \r \r +512M
+		$ \r \r +1M
 		$ t 1
 	$ n
 		$ \r \r \r
 	$ w
 	
-	mkfs.fat -F32 /dev/sda1
+	mkfs.vfat /dev/sda1
 	mkfs.ext4 /dev/sda2
 	
 	mount /dev/sda2 /mnt # here be dragons
-	mkdir /mnt/boot
-	mount /dev/sda1 /mnt/boot # dragons end
+	mkdir /mnt/efi
+	mount /dev/sda1 /mnt/efi # dragons end
 else
 	fdisk /dev/sda
 		$ o
@@ -43,27 +46,30 @@ else
 	mount /dev/sda1 /mnt
 fi
 
-# dhcpcd
-# wifi-menu
-ping 1.1.1.1
-
-nano /etc/pacman.d/mirrorlist
-pacstrap /mnt base nano neofetch htop
-
+# free -m
 fallocate -l 6G /mnt/swapfile
 chmod 600 /mnt/swapfile
 mkswap /mnt/swapfile
 swapon /mnt/swapfile
 
-genfstab -U /mnt >> /mnt/etc/fstab
+# dhcpcd # wifi-menu
+ping 8.8.8.8
 
+pacman -Sy reflector
+reflector -l 20 --sort score --save /etc/pacman.d/mirrorlist
+pacstrap /mnt base nano sudo pacman-contrib man-db man-pages
+genfstab -U /mnt >> /mnt/etc/fstab
+nano /mnt/etc/fstab
+	$ ... /         ... rw,noatime                    ...
+	$ ... /efi      ... rw,noatime,...                ...
+	$ ... /swapfile ... defaults,x-systemd.requires=/ ...
 arch-chroot /mnt
 
 
 
-### Installation
+### Install
 
-# timedatectl set-ntp 1
+timedatectl set-ntp 1
 hwclock -w
 ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
 
@@ -71,7 +77,7 @@ nano /etc/locale.gen
 	$ en_GB.UTF-8 UTF-8
 locale-gen
 nano /etc/vconsole.conf
-	$ echo KEYMAP=cz-us-qwertz
+	$ KEYMAP=cz-us-qwertz
 
 echo dellin > /etc/hostname
 
@@ -79,64 +85,127 @@ nano /etc/pacman.conf
 	$ Color
 	$ TotalDownload
 	$ VerbosePkgLists
-	$ ILoveCandy
 	$ [multilib]\nInclude = /etc/pacman.d/mirrorlist # enable 32-bit
 
-pacman -Syyy linux # linux-lts
-pacman -S linux-firmware # dosfstools mtools
-neofetch
-pacman -S # intel-ucode # amd-ucode
-pacman -S # mesa # nvidia nvidia-utils nvidia-lts
+pacman -Sy linux # linux-lts
+pacman -S linux-firmware mesa dosfstools # mtools
 
-pacman -S netctl ifplugd dhcpcd wpa_supplicant dialog
-systemctl enable netctl-ifplugd@interface.service
-systemctl enable netctl-auto@interface.service
-# wifi-menu
+# lscpu | grep Model
+pacman -S intel-ucode # amd-ucode
 
-pacman -S man-db man-pages base-devel git
+# lspci -k | grep -A 2 -E "(VGA|3D)"
+pacman -S nvidia nvidia-settings opencl-nvidia nvidia-prime lib32-nvidia-utils # nvidia-lts
 
-pacman -S grub os-prober efibootmgr
+pacman -S networkmanager macchanger
+systemctl enable NetworkManager.service
+# nmcli # nmtui
+
 if [ -e /sys/firmware/efi ]; then
-	grub-install --efi-directory=/boot # this should work, there's absolutely no reason for it not to work
+	pacman -S grub efibootmgr
+	grub-install --efi-directory=/efi
+	# cp /efi/EFI/arch/grubx64.efi /efi/EFI/arch/{BOOTx64,mmx64}.efi # if you failed to update mirrorlist
 else
+	pacman -S grub os-prober
 	grub-install /dev/sda
 fi
-mkinitcpio -P
+# mkinitcpio -P # if you installed linux-firmware separately from linux
+# nano /etc/default/grub
+	$ GRUB_TIMEOUT=1
+	$ GRUB_INIT_TUNE="300 131 1 196 3"
 grub-mkconfig -o /boot/grub/grub.cfg
 
 passwd
 	$ 123456
 	$ 123456
 
+
+
+### Users
+
 EDITOR=nano visudo
 	$ Defaults !tty_tickets
 	$ %wheel ALL=(ALL) ALL
-	$ %wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu
+	$ %wheel ALL=(ALL) NOPASSWD: /usr/bin/pacman -Syu
 
-useradd lin -m -s /bin/bash
+pacman -S xonsh python-prompt_toolkit
+useradd lin -m -s /usr/bin/xonsh
+
 usermod lin -a -G adm,ftp,games,http,log,rfkill,sys,uucp,wheel,tty
 usermod lin -a -G audio,disk,floppy,input,kvm,optical,scanner,storage,video
 usermod lin -a -G network,users
+
 passwd lin
 	$ 1234
 	$ 1234
 
 exit
-shutdown now # eject disc
+reboot
 	$ lin
 	$ 1234
 
 
 
-### Graphics
+### Display Manager (Login Screen)
 
-git clone https://aur.archlinux.org/ly.git
-cd ly
-makepkg -iscr
+sudo pacman -S base-devel git
+git clone https://aur.archlinux.org/yay.git
+	cd yay
+	makepkg -isc
+	cd ..
+	rm -rf yay
+
+yay -S ly
+sudo nano /etc/ly/config.ini
+	$ tty = 2
 sudo systemctl enable ly.service
 sudo systemctl disable getty@tty2.service
 
-pacman -S noto-fonts sway alacritty dmenu grm i3status mako slurp swayidle swaylock wallutils waybar xorg-server-xwayland
+
+
+### Window Manager - WIP
+
+yay -S cmake ffmpeg wlroots-git wayfire-git wf-config-git wf-shell-git wcm-git wayfire-plugins-extra-git
+yay -S alacritty swaylock swayidle slurp mako kanshi light grim wofi wlogout-git wallutils
+
+yay -S pavucontrol jack2 carla
+
+# https://jlk.fjfi.cvut.cz/arch/manpages/man/xkeyboard-config.7
+# LAYOUT cz(qwerty),cz
+# OPTIONS grp:alts_toggle, lv3:alt_switch, mod_led:compose, keypad:future, kpdl:dotoss, numpad:shift3, shift:both_shiftlock, compose:menu,nbsp:level2, terminate:ctrl_alt_bksp
+
+cp /usr/share/wayfire.ini ~/.config/wayfire.ini
+nano ~/.config/wayfire.ini
+	$ ???
+cp /usr/share/doc/wf-shell-git/wf-shell.ini.example ~/.config/wf-shell.ini
+nano ~/.config/wf-shell.ini
+	$ ???
+
+mkdir -p ~/.config/kanshi
+touch ~/.config/kanshi/config
+kanshi
+
+# yay -S waybar dmenu wl-clipboard wf-recorder xorg-server-xwayland wshowkeys-git
+
+
+
+### Apps
+
+git clone https://github.com/Patrolin/settings.git
+sh settings/pacman/packages.sh
+
+pacman -S opera youtube-dl neofetch python-pip
+# set swappiness 1
+libcgroup [AUR]
+# set browser swappiness 90 or limit RAM # https://pastebin.com/Q9udkRuw # https://github.com/henrypotgieter
+
+yay -S htop-temperature vlc vlc-plugin-fluidsynth
+# yay -S soundfont-fluid soundfonts-aur-meta
+
+pacman -S qemu libvirt ovmf virt-manager
+sudo systemctl enable libvirtd.service virtlogd.socket
+# pacman -S ebtables iptables dnsmasq
+sudo virsh net-autostart default
+...
 
 sudo reboot
 	$ sway
@@ -145,14 +214,30 @@ sudo reboot
 
 ### Usage
 
-pacman -S # install
+/cgroup/blob/master/cgroup
+cgexec
+cgclassify # move process to group
+cgcreate
+cgdelete
+cgset
+nano /etc/cgconfig.conf
+	$ group http { memory{ memory.limit_in_bytes = 1G; } }
+nano /etc/sysconfig/firefox.conf
+	$ CGROUP_DAEMON="memory:/http"
+
+
+pacman -S ... # install
+pacman -S --asdeps $(pactree -l ...) # install dependencies
 pacman -Syu # update, upgrade
-pacman -Ss # search server
+pacman -Ss ... # search server
 pacman -Q # search local
 pacman -Qe # search explicitly installed
 pacman -Qq # package names only
 pacman -Qm # AUR packages only
 pacman -Qdt # list unnecessary dependencies
+pacman -Qi ... # list info
 pacman -Rn # remove config
-pacman -Rs # remove unnecessary dependencies
+yay -Yc # pacman -Rs # remove unnecessary dependencies
+git checkout -b ... # switch to branch
+
 systemctl --type=service
