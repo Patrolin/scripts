@@ -164,7 +164,7 @@ class MyClient(discord.Client):
 					s.append(f'{i: >4}  {jmeno: <16}  {planety: <7}  {populace: <8}  {sila: <11}  {dobyt: <5}  {utok}')
 				s = '\n'.join(s)
 				if send_msg:
-					print('sending')#await stargateGame.send(f'```{s}```')
+					await stargateGame.send(f'```{s}```')
 				await asyncio.sleep(61)
 	
 	async def on_message(self, message):
