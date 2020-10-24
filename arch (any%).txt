@@ -8,15 +8,15 @@
 
 ### Bootstrap
 
+# lsblk
 fdisk /dev/sda
 	$ o
-	$ n
-		$ \r \r \r \r
+	$ n \r \r \r \r
 	$ w
 mkfs.ext4 /dev/sda1
 mount /dev/sda1 /mnt
 
-pacstrap /mnt base nano sudo linux linux-firmware networkmanager
+pacstrap /mnt base linux linux-firmware iwd sudo grub nano
 genfstab -U /mnt >> /mnt/etc/fstab
 arch-chroot /mnt
 
@@ -24,38 +24,36 @@ arch-chroot /mnt
 
 ### Install
 
-hwclock -w
+# ip a
+systemctl enable systemd-networkd systemd-resolved iwd
+nano /etc/systemd/network/50-default.network
+	$ [Match]
+	$ Name=*
+	$ [Network]
+	$ DHCP=yes
+# iwctl
 
-ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
-nano /etc/locale.gen
-	$ en_GB.UTF-8 UTF-8
-locale-gen
-
-echo dellin > /etc/hostname
-systemctl enable NetworkManager.service
-# nmcli # nmtui
-
-pacman -S grub
 grub-install /dev/sda
 grub-mkconfig -o /boot/grub/grub.cfg
 
 passwd
-	$ 12
-	$ 12
-
-
+	$ 123456
+	$ 123456
 
 ### Users
 
 EDITOR=nano visudo
 	$ %wheel ALL=(ALL) ALL
+
 useradd lin -m -G wheel
 
 passwd lin
-	$ 12
-	$ 12
+	$ 1234
+	$ 1234
 
 exit
-reboot # TIME
+reboot
+	$ Boot existing OS
+	$ Arch Linux
 	$ lin
-	$ 12
+	$ 1234
