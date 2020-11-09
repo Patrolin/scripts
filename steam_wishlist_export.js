@@ -14,9 +14,20 @@ function parsePrice(e){
     else
         return '0€';
 }
+ranks = document.querySelectorAll('.wishlist_row');
 titles = document.querySelectorAll('.title');
 prices = document.querySelectorAll('.purchase_container');
-games = Array(titles.length).fill().map((_, i) => {return {name: titles[i].innerText, url: `https://store.steampowered.com${new URL(titles[i].href).pathname}`, price: parsePrice(prices[i])}});
+games = Array(titles.length).fill().map(
+  (_, i) => {
+    return {
+      name: titles[i].innerText,
+      url: `https://store.steampowered.com${new URL(titles[i].href).pathname}`,
+      price: parsePrice(prices[i]),
+      rank: ranks[i].getAttribute('style')
+    }
+  }
+);
+games = games.sort((a, b) => a.rank.localeCompare(b.rank));
 
 games = games.filter(x => x.price !== 'NaN€' && x.price !== '0€');
 console.log(`${header}
