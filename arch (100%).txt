@@ -175,7 +175,6 @@ sudo systemctl disable getty@tty2.service
 # lspci -k | grep -A 2 -E "(VGA|3D)"
 yay -S xorg nvidia-xrun openbox
 ls /usr/share/sessions
-chsh xonsh
 
 yay -S pavucontrol jack2 carla
 
