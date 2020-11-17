@@ -20,14 +20,16 @@ function parseQuestion(q, i){
     var c = q.querySelector('.various-short-text-correct-answer-list');
     if (c) correct = [...correct, ...c.childNodes[c.childNodes.length-1].wholeText.split(', ')];
     if (q.querySelector('.ms-Icon--CheckMark') && !correct.length){
-        if (c = q.querySelector('.ms-Icon--CheckMark').parentNode.querySelector('input.office-form-textfield-input, [aria-checked] ~ span'))
-            correct.push(c);
-        else
-            setTimeout(() => console.log(`Answer getter not implemented for ${i+1}.`, q));
+        for(var checkmark of q.querySelectorAll('.ms-Icon--CheckMark')){
+            if (c = checkmark.parentNode.querySelector('input.office-form-textfield-input, [aria-checked] ~ span, span.student-feedback-view-short-text-hidden-text-to-position-correctness-icon'))
+                correct.push(c);
+            else
+                setTimeout(() => console.log(`Answer getter not implemented for ${i+1}.`, q));
+        }
     }
     var answers = new Map();
     function smush(ans, t){
-        for(var e of ans) answers.set(typeof e === 'string' ? e : e.innerText || e.wholeText || e.value, t);
+        for(var e of ans) answers.set(typeof e === 'string' ? e : e.innerText || e.wholeText || e.value || e.innerHTML, t);
     }
     smush(possible, 0);
     smush(selected, 1);
