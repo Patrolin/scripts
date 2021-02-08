@@ -28,9 +28,15 @@ function getResults(e){
     return getValue(e.q(/.office-form-theme-quiz-point/));
 }
 answerMap = '?-++'; // option, answer, correct, correct answer
-function getAnswers(e){
+function getRole(e){
+    var role = e.getAttribute('role') || e.className.trim();
+    if(role) return role;
+    if(e.q(/input[type="radio"]/)) return 'radiogroup';
+    if(e.q(/input[type="checkbox"]/)) return 'group';
+}
+function getAnswers(e, i){
   var f = e.q(/.office-form-question-element > div/);
-  switch(f.getAttribute('role') || f.className.trim()){
+  switch(getRole(f, i)){
     case 'radiogroup': // radio
       var answers = f.q(/.office-form-question-choice/g);
       var answer = f.q(/:checked/);
@@ -75,6 +81,6 @@ function getAnswers(e){
   return getValue(f).split('\n').map(line => `? ${line}`).join('\n');
 }
 function parseQuestion(e, i){
-  return `${i+1}\n${getTitle(e)}\n${getResults(e)}\n${getAnswers(e)}`;
+  return `${i+1}\n${getTitle(e, i)}\n${getResults(e, i)}\n${getAnswers(e, i)}`;
 }
 console.log([...document.q(/div.office-form-question-content/g)].map(parseQuestion).join('\n\n'));
