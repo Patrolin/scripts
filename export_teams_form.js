@@ -75,7 +75,9 @@ function getAnswers(e, i){
         : f.q(/.image-button-answerkey/)
           ? answer
           : null // TODO: fill missing data based on points?
-      return `${answerMap[2*!!correct + !!answer]} ${correct || answer}`;
+      var feedback = e.parentNode.q(/.office-form-feedback-content/);
+      feedback = feedback ? `\n# ${getValue(feedback)}` : '';
+      return `${answerMap[2*!!correct + !!answer]} ${correct || answer}${feedback}`;
   }
   setTimeout(() => console.log(`Unimplemented ${i+1}:`, f));
   return getValue(f).split('\n').map(line => `? ${line}`).join('\n');
