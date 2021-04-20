@@ -77,6 +77,7 @@ function getAnswers(e, i){
           : null // TODO: fill missing data based on points?
       var feedback = e.parentNode.q(/.office-form-feedback-content/);
       feedback = feedback ? `\n# ${getValue(feedback)}` : '';
+      console.log(e);
       return `${answerMap[2*!!correct + !!answer]} ${correct || answer}${feedback}`;
   }
   setTimeout(() => console.log(`Unimplemented ${i+1}:`, f));
@@ -85,4 +86,7 @@ function getAnswers(e, i){
 function parseQuestion(e, i){
   return `${i+1}\n${getTitle(e, i)}\n${getResults(e, i)}\n${getAnswers(e, i)}`;
 }
-console.log([...document.q(/div.office-form-question-content/g)].map(parseQuestion).join('\n\n'));
+
+var points = document.q(/.office-form-score-label/);
+points = points ? `Body: ${getValue(points)}\n\n` : '';
+console.log(points + [...document.q(/div.office-form-question-content/g)].map(parseQuestion).join('\n\n'));
