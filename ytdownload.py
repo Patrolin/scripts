@@ -4,8 +4,16 @@ import sys
 import pytube
 import subprocess
 
-url = sys.argv[1]
-playlist_title = pytube.Playlist(url).title
+if len(sys.argv) == 1:
+  exit('Not enough arguments!')
+if len(sys.argv) == 2:
+  url = sys.argv[1]
+else:
+  exit('Too many arguments!')
+try:
+  playlist_title = pytube.Playlist(url).title
+except Exception:
+  playlist_title = ''
 
 def truthiness(s: str, default=True) -> bool:
   s = s.strip()
@@ -44,5 +52,5 @@ while do_while:
     cmd += f' --write-sub --write-auto-sub --sub-lang "en,cs,rechat" --embed-subs'
     #cmd += f' --write-thumbnail --embed-thumbnail' # debian's youtube-dl is terrible and has broken dependencies for mp4 and doesn't support mkv
     cmd += f' -o "~/storage/downloads/video/{playlist_name}"'
-  #dowhile = subprocess.run(cmd, shell=True).returncode
   print(cmd)
+  dowhile = subprocess.run(cmd, shell=True).returncode
