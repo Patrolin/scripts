@@ -40,7 +40,7 @@ while do_while:
     except ValueError:
       pass
   cmd = 'youtube-dl'
-  cmd += f' {url}'
+  cmd += f' "{url}"'
   if audio_only:
     cmd += f' -f "best[height<={max_video_height}]/best"'
     cmd += f' -x --audio-format "mp3"' # youtube-dl is dumb and only supports exporting to mp3
@@ -53,4 +53,4 @@ while do_while:
     #cmd += f' --write-thumbnail --embed-thumbnail' # debian's youtube-dl is terrible and has broken dependencies for mp4 and doesn't support mkv
     cmd += f' -o "~/storage/downloads/video/{playlist_name}"'
   print(cmd)
-  dowhile = subprocess.run(cmd, shell=True).returncode
+  #dowhile = subprocess.run(cmd, shell=True).returncode
