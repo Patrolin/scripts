@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
 import sys
-import pytube
+import pytube # python -m pip install git+https://github.com/pytube/pytube
 import os
 import re
 import time
-import subprocess
+import subprocess # pip install youtube-dl
 
 def parseBool(s: str, default=True) -> bool:
   s = s.strip()
@@ -72,7 +72,7 @@ while do_while:
   playlist_path = ''
   if playlist:
     while playlist_path == '':
-      playlist_path = input(f'Playlist name? [{playlist_title}]: ') or playlist_title
+      playlist_path = input(f'\nPlaylist name? [{playlist_title}]: ') or playlist_title
     playlist_path += '/'
   audio_only = None
   while audio_only == None:
