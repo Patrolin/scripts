@@ -94,6 +94,10 @@ while do_while:
   except FileNotFoundError:
     pass
   try:
+    os.mkdir(os.path.expanduser(path))
+  except FileExistsError:
+    pass
+  try:
     with open(f'{path}qArchive.txt', 'r', encoding='utf8') as f:
       archive = {p[0]: (p[1][:-1] if p[1][-1] == '\n' else p[1]) for p in (x.split(' ', 1) for x in f.readlines())}
   except FileNotFoundError:
