@@ -118,13 +118,13 @@ while do_while:
     if (url not in archive) or (archive[url] not in media) or (
         not (media[archive[url]] & (FFMPEG_AUDIO_EXTENSIONS if audio_only else FFMPEG_VIDEO_EXTENSIONS))):
       goto = False
-      for j in range(5):
+      for j in range(8):
         try:
           youtube = pytube.YouTube(url)
           archive[url] = fs_escape(f'{youtube.title} [{youtube.author}]')
           goto = True
         except:
-          print(f'({j+1}/5) Failed')
+          print(f'({j+1}/8) Failed')
           time.sleep(2**j)
       if not goto:
         break
