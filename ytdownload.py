@@ -121,13 +121,13 @@ while do_while:
       for j in range(5):
         try:
           youtube = pytube.YouTube(url)
+          archive[url] = fs_escape(f'{youtube.title} [{youtube.author}]')
           goto = True
         except:
           print(f'({j+1}/5) Failed')
           time.sleep(2**j)
       if not goto:
         break
-      archive[url] = fs_escape(f'{youtube.title} [{youtube.author}]')
       print(f'({i+1}/{len(playlist2)}) +{url}')
   if not goto:
     continue
