@@ -18,7 +18,7 @@ def parseBool(s: str, default=True) -> bool:
 def fs_escape(s: str) -> str:
   return re.sub(r'[\/:*?"<>|]', '_', s) if os.name == 'nt' else s
 
-def download_url(url: str, path: str) -> None:
+def download_url(url: str, path: str, i: int, N: int) -> None:
   global do_while
   cmd = 'youtube-dl'
   cmd += f' "{url}"'
@@ -33,7 +33,7 @@ def download_url(url: str, path: str) -> None:
     #cmd += f' --write-thumbnail --embed-thumbnail' # debian's youtube-dl is terrible and has broken dependencies for mp4 and doesn't support mkv
   cmd += f' -o "{path}%(title)s [%(channel)s].%(ext)s"'
   #cmd += f' --download-archive ~/storage/downloads/video/{playlist_path}archive.txt' # termux doesn't implement asyncio, so this doesn't work either
-  print(f'\n{cmd}', flush=True)
+  print(f'\n({i}/{N}) {cmd}', flush=True)
   do_while |= subprocess.run(cmd, shell=True).returncode
 
 FFMPEG_AUDIO_EXTENSIONS = {'mp3'}
@@ -109,10 +109,10 @@ while do_while:
         not (media[archive[url]] & (FFMPEG_AUDIO_EXTENSIONS if audio_only else FFMPEG_VIDEO_EXTENSIONS))):
       youtube = pytube.YouTube(url)
       archive_delta[url] = fs_escape(f'{youtube.title} [{youtube.author}]')
-      print(f'+{url} ({i}/{len(playlist)})')
+      print(f'({i}/{len(playlist)}) +{url}')
   archive = archive | archive_delta
   with open(f'{path}qArchive.txt', 'w+', encoding='utf8') as f:
     f.writelines([f'{url} {name}\n' for (url, name) in archive.items()])
   do_while = False
-  for url in archive_delta:
-    download_url(url, path)
+  for i, url in enumerate(archive_delta):
+    download_url(url, path, i, len(archive_delta))
