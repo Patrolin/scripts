@@ -82,14 +82,17 @@ while do_while:
     playlist = {input_url}
   
   media = {}
-  with os.scandir(path) as d:
-    for direntry in d:
-      if direntry.is_file():
-        name, ext = direntry.name.rsplit('.', 1)
-        if name not in media:
-          media[name] = {ext}
-        else:
-          media[name].add(ext)
+  try:
+    with os.scandir(path) as d:
+      for direntry in d:
+        if direntry.is_file():
+          name, ext = direntry.name.rsplit('.', 1)
+          if name not in media:
+            media[name] = {ext}
+          else:
+            media[name].add(ext)
+  except FileNotFoundError:
+    pass
   try:
     with open(f'{path}qArchive.txt', 'r', encoding='utf8') as f:
       archive = {p[0]: (p[1][:-1] if p[1][-1] == '\n' else p[1]) for p in (x.split(' ', 1) for x in f.readlines())}
