@@ -26,10 +26,11 @@ def truthiness(s: str, default=True) -> bool:
 
 do_while = True
 while do_while:
-  playlist_name = ''
+  playlist_path = ''
   if playlist_title:
-    while playlist_name == '':
-      playlist_name = input(f'Playlist name? [{playlist_title}]: ') or playlist_title
+    while playlist_path == '':
+      playlist_path = input(f'Playlist name? [{playlist_title}]: ') or playlist_title
+    playlist_path += '/'
   audio_only = None
   while audio_only == None:
     audio_only = truthiness(input(f'Audio only? [Yn]: '), True)
@@ -45,12 +46,14 @@ while do_while:
     cmd += f' -f "best[height<={max_video_height}]/best"'
     cmd += f' -x --audio-format "mp3"' # youtube-dl is dumb and only supports exporting to mp3
     cmd += f' --add-metadata --metadata-from-title "%(artist)s - %(title)s"'
-    cmd += f' -o "~/storage/downloads/audio/{playlist_name}"'
+    cmd += f' -o "~/storage/downloads/audio/{playlist_path}%(title)s [%(channel)].%(ext)s"'
+    cmd += f' --download-archive ~/storage/downloads/audio/{playlist_path}archive.txt'
   else:
     cmd += f' -f "bestvideo[height<={max_video_height}]+bestaudio/best[height<={max_video_height}]/best"'
     cmd += f' --merge-output-format "mkv" --recode-video "mkv"' # debian is stupid and has decades old ffmpeg and doesn't let you recode into mp4
     cmd += f' --write-sub --write-auto-sub --sub-lang "en,cs,rechat" --embed-subs'
     #cmd += f' --write-thumbnail --embed-thumbnail' # debian's youtube-dl is terrible and has broken dependencies for mp4 and doesn't support mkv
-    cmd += f' -o "~/storage/downloads/video/{playlist_name}"'
-  print(cmd)
-  #dowhile = subprocess.run(cmd, shell=True).returncode
+    cmd += f' -o "~/storage/downloads/video/{playlist_path}%(title)s [%(channel)].%(ext)s"'
+    cmd += f' --download-archive ~/storage/downloads/video/{playlist_path}archive.txt'
+  print(cmd, flush=True)
+  dowhile = subprocess.run(cmd, shell=True).returncode
