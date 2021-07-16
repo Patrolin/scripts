@@ -25,7 +25,7 @@ def fs_escape(s: str) -> str:
   s = re.sub(FOO_ESCAPE, '_', s)
   s = re.sub(r'"', '\'', s)
   s = re.sub(r'$', 'S', s)
-  s = re.sub(r'|', '-', s)
+  s = re.sub(r'\|', '-', s)
   return s
 
 def download_url(url: str, path: str, i: int, N: int) -> None:
