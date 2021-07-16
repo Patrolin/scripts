@@ -105,6 +105,7 @@ while do_while:
   except FileNotFoundError:
     archive = {}
   archive_delta = {}
+  goto = False
   for i, url in enumerate(playlist2):
     if (url not in archive) or (archive[url] not in media) or (
         not (media[archive[url]] & (FFMPEG_AUDIO_EXTENSIONS if audio_only else FFMPEG_VIDEO_EXTENSIONS))):
