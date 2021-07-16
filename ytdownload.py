@@ -25,7 +25,7 @@ def download_url(url: str, path: str, i: int, N: int) -> None:
   if audio_only:
     cmd += f' -f "best[height<={max_video_height}]/best"'
     cmd += f' -x --audio-format "mp3"' # youtube-dl is dumb and only supports exporting to mp3
-    cmd += f' --add-metadata --metadata-from-title "%(artist)s - %(title)s"'
+    cmd += f' --add-metadata --metadata-from-title "%(title)s"'
   else:
     cmd += f' -f "bestvideo[height<={max_video_height}]+bestaudio/best[height<={max_video_height}]/best"'
     cmd += f' --merge-output-format "mkv" --recode-video "mkv"' # debian is stupid and has decades old ffmpeg and doesn't let you recode into mp4
