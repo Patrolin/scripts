@@ -104,11 +104,9 @@ while do_while:
       archive = {p[0]: (p[1][:-1] if p[1][-1] == '\n' else p[1]) for p in (x.split(' ', 1) for x in f.readlines())}
   except FileNotFoundError:
     archive = {}
-  archive_delta = {}
   goto = True
   for i, url in enumerate(playlist2):
-    if (url not in archive) or (archive[url] not in media) or (
-        not (media[archive[url]] & (FFMPEG_AUDIO_EXTENSIONS if audio_only else FFMPEG_VIDEO_EXTENSIONS))):
+    if (url not in archive):
       goto = False
       for j in range(5):
         try:
@@ -119,13 +117,17 @@ while do_while:
           time.sleep(2**j)
       if not goto:
         break
-      archive_delta[url] = fs_escape(f'{youtube.title} [{youtube.author}]')
+      archive[url] = fs_escape(f'{youtube.title} [{youtube.author}]')
       print(f'({i+1}/{len(playlist2)}) +{url}')
   if not goto:
     continue
-  archive = archive | archive_delta
   with open(f'{path}qArchive.txt', 'w+', encoding='utf8') as f:
     f.writelines([f'{url} {name}\n' for (url, name) in archive.items()])
+  media_delta = {}
+  for i, url in enumerate(playlist2):
+    if (archive[url] not in media) or (not (media[archive[url]] &
+                                            (FFMPEG_AUDIO_EXTENSIONS if audio_only else FFMPEG_VIDEO_EXTENSIONS))):
+      media_delta[url] = archive[url]
   do_while = False
-  for i, url in enumerate(archive_delta):
-    download_url(url, f'{path}{archive_delta[url]}', i, len(archive_delta))
+  for i, url in enumerate(media_delta):
+    download_url(url, f'{path}{media_delta[url]}', i, len(media_delta))
