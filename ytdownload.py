@@ -97,7 +97,7 @@ while do_while:
     with open(f'{path}qArchive.txt', 'r', encoding='utf8') as f:
       archive = {p[0]: (p[1][:-1] if p[1][-1] == '\n' else p[1]) for p in (x.split(' ', 1) for x in f.readlines())}
   except FileNotFoundError:
-    archive = set()
+    archive = {}
   archive_delta = {}
   for i, url in enumerate(playlist, 1):
     if (url not in archive) or (archive[url] not in media) or (
