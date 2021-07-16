@@ -112,7 +112,7 @@ while do_while:
         try:
           youtube = pytube.YouTube(url)
           goto = True
-        except BaseException:
+        except:
           print(f'({j+1}/5) Failed')
           time.sleep(2**j)
       if not goto:
