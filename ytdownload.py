@@ -16,7 +16,7 @@ def parseBool(s: str, default=True) -> bool:
     return None if s else default
 
 def fs_escape(s: str) -> str:
-  return re.sub(r'[\/:*?"<>|]', '_', s) if os.name == 'nt' else s
+  return re.sub(r'[\/:*?"<>|]', '_', s) if os.name == 'nt' else re.sub(r'[/]', '_', s)
 
 def download_url(url: str, path: str, i: int, N: int) -> None:
   global do_while
