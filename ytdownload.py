@@ -78,6 +78,7 @@ while do_while:
     path = f'~/storage/downloads/audio/{playlist_path}'
   else:
     path = f'~/storage/downloads/video/{playlist_path}'
+  path = os.path.expanduser(path)
   if not playlist:
     playlist = {input_url}
   
@@ -94,7 +95,7 @@ while do_while:
   except FileNotFoundError:
     pass
   try:
-    os.mkdir(os.path.expanduser(path))
+    os.mkdir(path)
   except FileExistsError:
     pass
   try:
