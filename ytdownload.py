@@ -24,14 +24,15 @@ def download_url(url: str, path: str, i: int, N: int) -> None:
   cmd += f' "{url}"'
   if audio_only:
     cmd += f' -f "best[height<={max_video_height}]/best"'
-    cmd += f' -x --audio-format "mp3"' # youtube-dl is dumb and only supports exporting to mp3
+    cmd += f' -x --audio-format "mp3"' # youtube-dl is dumb and only supports exporting to mp3 # TODO: download only audio when possible
     cmd += f' --add-metadata --metadata-from-title "%(title)s"'
   else:
     cmd += f' -f "bestvideo[height<={max_video_height}]+bestaudio/best[height<={max_video_height}]/best"'
     cmd += f' --merge-output-format "mkv" --recode-video "mkv"' # debian is stupid and has decades old ffmpeg and doesn't let you recode into mp4
     cmd += f' --write-sub --write-auto-sub --sub-lang "en,cs,rechat" --embed-subs'
     #cmd += f' --write-thumbnail --embed-thumbnail' # debian's youtube-dl is terrible and has broken dependencies for mp4 and doesn't support mkv
-  cmd += f' -o "{path}%(title)s [%(channel)s].%(ext)s"'
+  #cmd += f' -o "{path}%(title)s [%(channel)s].%(ext)s"'
+  cmd += f' -o "{path}.%(ext)s"'
   #cmd += f' --download-archive ~/storage/downloads/video/{playlist_path}archive.txt' # termux doesn't implement asyncio, so this doesn't work either
   print(f'\n({i}/{N}) {cmd}', flush=True)
   do_while |= subprocess.run(cmd, shell=True).returncode
@@ -115,4 +116,4 @@ while do_while:
     f.writelines([f'{url} {name}\n' for (url, name) in archive.items()])
   do_while = False
   for i, url in enumerate(archive_delta):
-    download_url(url, path, i, len(archive_delta))
+    download_url(url, f'{path}{archive_delta[url]}', i, len(archive_delta))
