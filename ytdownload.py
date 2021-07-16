@@ -4,6 +4,7 @@ import sys
 import pytube
 import os
 import re
+import time
 import subprocess
 
 def parseBool(s: str, default=True) -> bool:
@@ -16,7 +17,7 @@ def parseBool(s: str, default=True) -> bool:
     return None if s else default
 
 def fs_escape(s: str) -> str:
-  return re.sub(r'[\/:*?"<>|]', '_', s) if os.name == 'nt' else re.sub(r'[/]', '_', s)
+  return re.sub(r'[\/:*?"<>|]', '_', s) if os.name == 'nt' else re.sub(r'[/<>|]', '_', s)
 
 def download_url(url: str, path: str, i: int, N: int) -> None:
   global do_while
@@ -34,7 +35,7 @@ def download_url(url: str, path: str, i: int, N: int) -> None:
   #cmd += f' -o "{path}%(title)s [%(channel)s].%(ext)s"'
   cmd += f' -o "{path}.%(ext)s"'
   #cmd += f' --download-archive ~/storage/downloads/video/{playlist_path}archive.txt' # termux doesn't implement asyncio, so this doesn't work either
-  print(f'\n({i}/{N}) {cmd}', flush=True)
+  print(f'\n({i+1}/{N}) {cmd}', flush=True)
   do_while |= subprocess.run(cmd, shell=True).returncode
 
 FFMPEG_AUDIO_EXTENSIONS = {'mp3'}
@@ -80,8 +81,7 @@ while do_while:
   else:
     path = f'~/storage/downloads/video/{playlist_path}'
   path = os.path.expanduser(path)
-  if not playlist:
-    playlist = {input_url}
+  playlist2 = playlist or {input_url}
   
   media = {}
   try:
@@ -105,12 +105,23 @@ while do_while:
   except FileNotFoundError:
     archive = {}
   archive_delta = {}
-  for i, url in enumerate(playlist, 1):
+  for i, url in enumerate(playlist2):
     if (url not in archive) or (archive[url] not in media) or (
         not (media[archive[url]] & (FFMPEG_AUDIO_EXTENSIONS if audio_only else FFMPEG_VIDEO_EXTENSIONS))):
-      youtube = pytube.YouTube(url)
+      goto = False
+      for j in range(5):
+        try:
+          youtube = pytube.YouTube(url)
+          goto = True
+        except BaseException:
+          print(f'({j+1}/5) Failed')
+          time.sleep(2**j)
+      if not goto:
+        break
       archive_delta[url] = fs_escape(f'{youtube.title} [{youtube.author}]')
-      print(f'({i}/{len(playlist)}) +{url}')
+      print(f'({i+1}/{len(playlist2)}) +{url}')
+  if not goto:
+    continue
   archive = archive | archive_delta
   with open(f'{path}qArchive.txt', 'w+', encoding='utf8') as f:
     f.writelines([f'{url} {name}\n' for (url, name) in archive.items()])
