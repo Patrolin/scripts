@@ -114,7 +114,8 @@ while do_while:
     archive = {}
   goto = True
   for i, url in enumerate(playlist2):
-    if (url not in archive):
+    if (url not in archive) or (archive[url] not in media) or (
+        not (media[archive[url]] & (FFMPEG_AUDIO_EXTENSIONS if audio_only else FFMPEG_VIDEO_EXTENSIONS))):
       goto = False
       for j in range(5):
         try:
