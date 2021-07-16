@@ -21,7 +21,7 @@ EXT_POSIX_ESCAPE = r'[/<>|*]'
 
 def fs_escape(s: str) -> str:
   #return re.sub(NTFS_ESCAPE, '_', s) if os.name == 'nt' else re.sub(EXT_POSIX_ESCAPE, '_', s)
-  return re.sub(str(set(NTFS_ESCAPE) | set(EXT_POSIX_ESCAPE)), '_', s)
+  return re.sub(f'[{str(set(NTFS_ESCAPE[1:-1]) | set(EXT_POSIX_ESCAPE[1:-1]))}]', '_', s)
 
 def download_url(url: str, path: str, i: int, N: int) -> None:
   global do_while
