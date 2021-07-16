@@ -18,10 +18,14 @@ def parseBool(s: str, default=True) -> bool:
 
 NTFS_ESCAPE = r'[\/:*?"<>|]'
 EXT_POSIX_ESCAPE = r'[/<>|*]'
+FOO_ESCAPE = r'[\/:*?<>|*]'
+BAR_ESCAPE = r'["]'
 
 def fs_escape(s: str) -> str:
   #return re.sub(NTFS_ESCAPE, '_', s) if os.name == 'nt' else re.sub(EXT_POSIX_ESCAPE, '_', s)
-  return re.sub(f'[{str(set(NTFS_ESCAPE[1:-1]) | set(EXT_POSIX_ESCAPE[1:-1]))}]', '_', s)
+  s = re.sub(FOO_ESCAPE, '_', s)
+  s = re.sub(BAR_ESCAPE, '\'', s)
+  return s
 
 def download_url(url: str, path: str, i: int, N: int) -> None:
   global do_while
