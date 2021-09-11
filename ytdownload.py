@@ -126,7 +126,7 @@ music_path = f'{user_path}/storage/music/' if is_termux else f'{user_path}/Music
 downloads_path = f'{user_path}/storage/downloads/' if is_termux else f'{user_path}/Downloads/'
 
 async def main():
-  global connections, video_count, download_count
+  global connections, video_count, video_info_count, download_count
   playlist_name = ''
   if is_playlist:
     while playlist_name == '':
@@ -163,12 +163,13 @@ async def main():
         else:
           storage[name].add(ext)
 
+    video_count = len(playlist)
+    video_info_count = 0
     download_count = 0
     tasks = []
     shuffled_playlist = list(playlist)
     random.shuffle(shuffled_playlist)
     for url in shuffled_playlist:
-      video_count += 1
       task = asyncio.ensure_future(get_video_info_and_download(url, audio_only, playlist_path, storage))
       tasks.append(task)
 
