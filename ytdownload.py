@@ -66,7 +66,7 @@ async def get_video_info_and_download(url: str, audio_only: bool, playlist_path:
   await video_info_count_lock.acquire()
   video_info_count += 1
   video_info_count_lock.release()
-  print(f'({video_info_count}/{video_count}) +{url} {file_name}', flush=True)
+  print(f'\n({video_info_count}/{video_count}) +{url} {file_name}', flush=True)
 
   if (file_name not in storage) or (not (storage[file_name] &
                                           (AUDIO_EXTENSIONS_WHITELIST if audio_only else VIDEO_EXTENSIONS_WHITELIST))):
@@ -177,10 +177,10 @@ async def main():
     error_count = len(errors)
     if error_count:
       pprint(errors)
-      print(f'{download_count} downloads {error_count} errors', flush=True)
+      print(f'\n{download_count} downloads {error_count} errors', flush=True)
       do_while = parseBool(input(f'Continue? [Yn]: '), True)
     else:
-      print(f'{download_count} downloads {error_count} errors', flush=True)
+      print(f'\n{download_count} downloads {error_count} errors', flush=True)
       input(f'Exit? [Y]: ')
       do_while = False
 
