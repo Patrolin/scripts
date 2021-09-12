@@ -52,6 +52,7 @@ async def get_video_info_and_download(url: str, audio_only: bool, playlist_path:
   else:
     for j in range(8):
       await connections.acquire()
+      # todo: get english title # https://stackoverflow.com/questions/1216029/get-title-from-youtube-videos
       try:
         youtube = pytube.YouTube(url)
         file_name = fs_escape(f'{youtube.title} [{youtube.author}]')
