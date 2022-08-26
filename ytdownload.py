@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from yt_dlp import YoutubeDL
 import re
 from typing import NamedTuple, cast
