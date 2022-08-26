@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from yt_dlp import YoutubeDL
+from yt_dlp import YoutubeDL # pip install yt-dlp
 import re
 from typing import NamedTuple, cast
 import asyncio
