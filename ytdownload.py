@@ -102,6 +102,7 @@ def VIDEO_CMD(video_info: VideoInfo, file_path: str, max_video_height: int):
 
 user_path = expanduser("~")
 is_termux = user_path.find("com.termux") > -1
+default_max_video_height = 480 if is_termux else 1080
 music_path = f"{user_path}/storage/music" if is_termux else f"{user_path}/Music"
 downloads_path = f"{user_path}/storage/downloads" if is_termux else f"{user_path}/Downloads"
 
@@ -163,7 +164,8 @@ async def main():
     print(f" Playlist: {playlist_name}" if is_playlist else f" Video: {videos[0].title}")
 
     audio_only = promptBool(" Audio only? [Yn]: ", True)
-    max_video_height = promptInt(" Max video height? [480]: ", 480) if not audio_only else 480
+    max_video_height = promptInt(f" Max video height? [{default_max_video_height}]: ",
+                                 default_max_video_height) if not audio_only else default_max_video_height
 
     #work_index_lock = asyncio.Lock()
     for i, v in enumerate(videos):
