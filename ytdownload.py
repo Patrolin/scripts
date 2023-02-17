@@ -155,6 +155,7 @@ async def main():
     standardized_url: str = playlist_url(cast(str, playlist_id)) if is_playlist else video_url(cast(str, video_id))
     with YoutubeDL({"extract_flat": True, "quiet": True}) as yt:
         playlist_or_video = yt.extract_info(standardized_url, download=False)
+        if playlist_or_video == None: raise ValueError("yt-dlp returned None")
         if is_playlist:
             playlist_name = playlist_or_video["title"]
             for video in playlist_or_video["entries"]:

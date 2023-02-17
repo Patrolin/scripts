@@ -1,1 +1,9 @@
-Math.round(window.pageYOffset) >= document.body.scrollHeight - window.innerHeight
+function scrollPosition(element) {
+    return element.scrollTop;
+}
+function scrollHeight(element) {
+    return element.scrollHeight - element.getBoundingClientRect().height;
+}
+function isScrolledToBottom(element) {
+    return scrollPosition(element) >= scrollHeight(element);
+}
