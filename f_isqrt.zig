@@ -31,7 +31,7 @@ pub fn f_isqrt(x: f32) f32 {
     i = i - isqrt_bias; // isqrt_bias = (-1/2 * 127 * 2^23) - (127 * 2^23)
     var y = @bitCast(f32, i); // i = (log2(1/sqrt(x)) + 127) * 2^23
 
-    // Newtons method TODO: wtf?
+    // Newtons method // https://www.youtube.com/watch?v=E24zUEKqgwQ
     y = y * (1.5 - (half_x * y * y)); // 1st iteration
     //y = y * (1.5 - (half_x * y * y)); // 2nd iteration
     return y; // y = 1/sqrt(x)
